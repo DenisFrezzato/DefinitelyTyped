@@ -4,49 +4,55 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 /// <reference types="node" />
 
+import { IncomingHttpHeaders } from 'http';
+
 declare namespace busboy {
-    interface Options {
-        headers: any;
+    export interface Options {
+        headers: IncomingHttpHeaders;
     }
 
-    interface BusboyConfig {
-        headers?: any;
+    export interface BusboyConfig {
+        headers?: IncomingHttpHeaders;
         highWaterMark?: number | undefined;
         fileHwm?: number | undefined;
         defCharset?: string | undefined;
         preservePath?: boolean | undefined;
-        limits?: {
-            fieldNameSize?: number | undefined;
-            fieldSize?: number | undefined;
-            fields?: number | undefined;
-            fileSize?: number | undefined;
-            files?: number | undefined;
-            parts?: number | undefined;
-            headerPairs?: number | undefined;
-        } | undefined;
+        limits?:
+            | {
+                  fieldNameSize?: number | undefined;
+                  fieldSize?: number | undefined;
+                  fields?: number | undefined;
+                  fileSize?: number | undefined;
+                  files?: number | undefined;
+                  parts?: number | undefined;
+                  headerPairs?: number | undefined;
+              }
+            | undefined;
     }
 
-    interface Busboy extends NodeJS.WritableStream {
-        on(event: 'field',
-           listener: (
-               fieldname: string,
-               val: any,
-               fieldnameTruncated: boolean,
-               valTruncated: boolean,
-               encoding: string,
-               mimetype: string) => void): this;
-        on(event: 'file',
-           listener: (
-               fieldname: string,
-               file: NodeJS.ReadableStream,
-               filename: string,
-               encoding: string,
-               mimetype: string) => void): this;
+    export interface FieldListener {
+        (
+            fieldname: string,
+            val: string,
+            fieldnameTruncated: boolean,
+            valTruncated: boolean,
+            encoding: string,
+            mimetype: string,
+        ): void;
+    }
+
+    export interface FileListener {
+        (fieldname: string, file: NodeJS.ReadableStream, filename: string, encoding: string, mimetype: string): void;
+    }
+
+    export interface Busboy extends NodeJS.WritableStream {
+        on(event: 'field', listener: FieldListener): this;
+        on(event: 'file', listener: FileListener): this;
         on(event: 'finish', callback: () => void): this;
         on(event: 'partsLimit', callback: () => void): this;
         on(event: 'filesLimit', callback: () => void): this;
         on(event: 'fieldsLimit', callback: () => void): this;
-        on(event: string, listener: Function): this;
+        on(event: string, listener: (...args: any[]) => void): this;
     }
 
     interface BusboyConstructor {
